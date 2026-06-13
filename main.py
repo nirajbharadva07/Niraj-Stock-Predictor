@@ -20,7 +20,7 @@ app.add_middleware(
 
 model = None
 scaler = None
-fallback_mode = False
+model_load_error = None
 
 def try_load_model_files():
     global model, scaler
@@ -29,7 +29,7 @@ def try_load_model_files():
 
 @app.on_event("startup")
 def startup_event():
-    global model, scaler, fallback_mode
+    global model_load_error
     try:
         try_load_model_files()
         print(">>> NIRAJ AI ENGINE: MODELS LOADED")
@@ -39,16 +39,24 @@ def startup_event():
             from data_model import build_stock_model
             build_stock_model()
             try_load_model_files()
-            fallback_mode = False
             print(">>> NIRAJ AI ENGINE: MODEL REBUILT AND LOADED")
         except Exception as build_exc:
-            print(f">>> MODEL BUILD FAILED: {build_exc}. Switching to ALGO FALLBACK MODE.")
-            fallback_mode = True  # Agar .pkl fail hua toh ye system ko zinda rakhega
+            model_load_error = str(build_exc)
+            print(f">>> MODEL BUILD FAILED: {build_exc}. Prediction endpoint will return an error.")
+
+@app.get('/status')
+def status():
+    return {
+        'status': 'success' if model is not None else 'error',
+        'model_loaded': model is not None,
+        'error': model_load_error,
+    }
 
 @app.get("/predict")
 def predict():
-    global model, scaler, fallback_mode
     try:
+        if model is None or scaler is None:
+            raise RuntimeError('Model is not loaded. Deploy with stock_model.pkl or allow model build.')
         nifty_data = yf.download('^NSEI', period='60d', progress=False)['Close']
         vix_data = yf.download('^INDIAVIX', period='60d', progress=False)['Close']
         us_data = yf.download('^GSPC', period='60d', progress=False)['Close']
@@ -62,21 +70,13 @@ def predict():
         df = pd.DataFrame({'Nifty': nifty_data, 'VIX': vix_data, 'US': us_data, 'Crude': crude_data}).ffill().dropna()
         returns = df.pct_change().dropna()
         last_data = returns.iloc[-1]
-        
-        # 🚀 THE BULLETPROOF LOGIC
-        if not fallback_mode and model is not None and scaler is not None:
-            # Pkl file mil gayi -> AI Model chalega
-            input_array = np.array([[float(last_data['Nifty']), float(last_data['US']), float(last_data['Crude']), float(last_data['VIX'])]])
-            x_scaled = scaler.transform(input_array)
-            pred = int(model.predict(x_scaled)[0])
-            probs = model.predict_proba(x_scaled)[0]
-            confidence_val = round(max(probs)*100, 2)
-            prediction_text = "UP" if pred == 1 else "DOWN"
-        else:
-            # Pkl file nahi mili -> Smart Math Algorithm chalega (UI crash nahi hoga)
-            net_momentum = last_data['Nifty'] * 0.4 + last_data['US'] * 0.4 - last_data['VIX'] * 0.2
-            prediction_text = "UP" if net_momentum > 0 else "DOWN"
-            confidence_val = round(random.uniform(65.0, 85.0), 2)
+
+        input_array = np.array([[float(last_data['Nifty']), float(last_data['US']), float(last_data['Crude']), float(last_data['VIX'])]])
+        x_scaled = scaler.transform(input_array)
+        pred = int(model.predict(x_scaled)[0])
+        probs = model.predict_proba(x_scaled)[0]
+        confidence_val = round(max(probs)*100, 2)
+        prediction_text = "UP" if pred == 1 else "DOWN"
 
         confidence = f"{confidence_val}%"
         chart_data = [{"time": d.strftime('%d %b'), "price": round(float(p), 2)} for d, p in df.tail(30)['Nifty'].items()]
