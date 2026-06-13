@@ -53,7 +53,7 @@ const StatPill = ({ label, value, accent }) => (
   </div>
 );
 
-const API_BASE_URL = 'https://niraj-stock-predictor.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
 
 function App() {
   const [data, setData] = useState(null);
