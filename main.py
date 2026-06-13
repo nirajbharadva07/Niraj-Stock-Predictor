@@ -10,7 +10,7 @@ import random
 
 app = FastAPI()
 
-# 🔥 MODIFIED CORS MIDDLEWARE FOR NETLIFY DEPLOYMENT
+# MODIFIED CORS MIDDLEWARE FOR NETLIFY DEPLOYMENT
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Netlify aur local dono se request aane dega

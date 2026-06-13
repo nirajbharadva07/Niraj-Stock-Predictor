@@ -72,6 +72,7 @@ function App() {
       // Yahan API_BASE_URL ka use kiya gaya hai
       const res = await axios.get(`${API_BASE_URL}/predict`);
       if (res.data.status === "success") {
+        console.log("YE RAHA BACKEND DATA:", res.data);
         setData(res.data);
       } else {
         setError("Backend Process Error: " + res.data.message);
