@@ -58,7 +58,7 @@ const StatPill = ({ label, value, accent }) => (
 // const API_BASE_URL = 'http://localhost:8001';
 
 // Live server ke liye upar wale par '//' lagayein aur niche wale ka '//' hata dein:
-const API_BASE_URL = 'https://niraj-quant-api.onrender.com';
+const API_BASE_URL = 'https://niraj-stock-predictor.onrender.com';
 
 function App() {
   const [data, setData] = useState(null);
