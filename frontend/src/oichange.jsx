@@ -19,6 +19,13 @@ const getInterpretation = (oiChg, ltpChg, isCall) => {
   return { text: "Neutral", color: "#94a3b8" };
 };
 
+// ── API URL SETUP (Local vs Live) ──
+// Local testing ke liye ise on rakhein:
+// const API_BASE_URL = 'http://localhost:8001';
+
+// Live server ke liye upar wale par '//' lagayein aur niche wale ka '//' hata dein:
+const API_BASE_URL = 'https://niraj-quant-api.onrender.com';
+
 const OIChangeDashboard = ({ onBack }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +33,8 @@ const OIChangeDashboard = ({ onBack }) => {
 
   const fetchLiveOptionChain = async () => {
     try {
-      const res = await axios.get('http://localhost:8001/option-chain');
+      // Yahan API_BASE_URL add kar diya gaya hai
+      const res = await axios.get(`${API_BASE_URL}/option-chain`);
       if (res.data.status === 'success') {
         setData(res.data);
         setError(null);

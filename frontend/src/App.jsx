@@ -6,7 +6,7 @@ import { ShieldCheck, Activity, Calendar, Zap, TrendingUp, TrendingDown, Radio, 
 import { format, addDays } from 'date-fns';
 import Hero3D from './Hero3D';
 import OIDashboard from './oi'; 
-import OIChangeDashboard from './oichange'; // 🔥 NAYA IMPORT
+import OIChangeDashboard from './oichange';
 import './App.css';
 
 // ── PROTECTED VALUE HOOK ──
@@ -53,6 +53,13 @@ const StatPill = ({ label, value, accent }) => (
   </div>
 );
 
+// ── API URL SETUP (Local vs Live) ──
+// Local testing ke liye ise on rakhein:
+// const API_BASE_URL = 'http://localhost:8001';
+
+// Live server ke liye upar wale par '//' lagayein aur niche wale ka '//' hata dein:
+const API_BASE_URL = 'https://niraj-quant-api.onrender.com';
+
 function App() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -62,7 +69,8 @@ function App() {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get('http://localhost:8001/predict');
+      // Yahan API_BASE_URL ka use kiya gaya hai
+      const res = await axios.get(`${API_BASE_URL}/predict`);
       if (res.data.status === "success") {
         setData(res.data);
       } else {
@@ -102,7 +110,7 @@ function App() {
   if (activeView === 'oi') {
     return <OIDashboard onBack={() => setActiveView('home')} />;
   }
-  // 🔥 NAYA ROUTE FOR OI CHANGE
+  
   if (activeView === 'oichange') {
     return <OIChangeDashboard onBack={() => setActiveView('home')} />;
   }
@@ -146,7 +154,6 @@ function App() {
                   <BarChart2 size={18} color="#22d3ee" /> Live Option Chain (OI)
                 </button>
                 
-                {/* 🔥 ACTIVE OI CHANGE BUTTON */}
                 <button 
                   onClick={() => { setIsMenuOpen(false); setActiveView('oichange'); }} 
                   style={{ display: 'flex', alignItems: 'center', gap: '15px', color: '#e2e8f0', padding: '12px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', border: '1px solid transparent', transition: 'all 0.2s', width: '100%', textAlign: 'left' }}
