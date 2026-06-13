@@ -3,8 +3,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
 import { ArrowLeft, Zap, TrendingUp, TrendingDown, Info, Crosshair, AlertTriangle } from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
+import API_BASE_URL from './api';
 
 const safeMobileStyles = `
   .pro-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }

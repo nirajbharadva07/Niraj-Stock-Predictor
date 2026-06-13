@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { ShieldAlert, Zap, TrendingDown, TrendingUp, Crosshair, Clock, ArrowLeft, Info, AlertTriangle } from 'lucide-react';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
+import API_BASE_URL from './api';
 
 const safeMobileStyles = `
   .pro-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }

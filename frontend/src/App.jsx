@@ -7,6 +7,7 @@ import { format, addDays } from 'date-fns';
 import Hero3D from './Hero3D';
 import OIDashboard from './oi'; 
 import OIChangeDashboard from './oichange';
+import API_BASE_URL from './api';
 import './App.css';
 
 // ── PROTECTED VALUE HOOK ──
@@ -43,7 +44,15 @@ const StatPill = ({ label, value, accent }) => (
   </div>
 );
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
+const API_BASE_URL = (() => {
+  if (import.meta.env.VITE_API_BASE) return import.meta.env.VITE_API_BASE;
+  if (import.meta.env.DEV) return 'http://localhost:8001';
+  return undefined;
+})();
+
+if (!API_BASE_URL) {
+  throw new Error('Missing VITE_API_BASE in production. Set it in Netlify environment variables.');
+}
 
 // 🔥 MOBILE CSS: Ensures prediction area fits perfectly on small screens 🔥
 const mobileFixStyles = `
