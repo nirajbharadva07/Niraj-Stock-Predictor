@@ -9,13 +9,20 @@ from datetime import datetime
 import random
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# 🔥 MODIFIED CORS MIDDLEWARE FOR NETLIFY DEPLOYMENT
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Netlify aur local dono se request aane dega
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 # Load model and scaler
 try:
     model = joblib.load('stock_model.pkl')
     scaler = joblib.load('scaler.pkl')
-    TRAIN_FEATURES = ['Nifty_Ret', 'US_Ret', 'Crude_Ret', 'VIX_Change']
     print(">>> NIRAJ AI ENGINE: ONLINE")
 except Exception as e:
     print(f">>> ASSET ERROR: {e}")
@@ -23,7 +30,7 @@ except Exception as e:
 @app.get("/predict")
 def predict():
     try:
-        # Prediction logic using yfinance (Reliable)
+        # Prediction logic using yfinance
         nifty_data = yf.download('^NSEI', period='60d', progress=False)['Close']
         vix_data = yf.download('^INDIAVIX', period='60d', progress=False)['Close']
         us_data = yf.download('^GSPC', period='60d', progress=False)['Close']
@@ -59,40 +66,25 @@ def predict():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-# 🔥 BULLETPROOF SIMULATED OPTION CHAIN
 @app.get("/option-chain")
 def get_option_chain():
     try:
-        # Step 1: Get Real Spot Price (yfinance is stable)
         nifty = yf.Ticker("^NSEI")
+        # Use fast_info to avoid potential API latency
         spot = nifty.fast_info['lastPrice']
-        if not spot:
-            spot = 24000.0 # Emergency fallback
+        if not spot: spot = 24000.0
             
         atm_strike = round(spot / 50) * 50
         timestamp = datetime.now().strftime("%d-%b-%Y %H:%M:%S")
         
         strikes = []
-        # Generate +/- 8 strikes around ATM
         for i in range(-8, 9):
             strike = atm_strike + (i * 50)
-            
-            # Logic for Realistic Prices (LTP)
-            # CE is expensive when Strike < Spot (ITM)
-            # PE is expensive when Strike > Spot (ITM)
             dist = abs(strike - spot)
             
-            # Call LTP Simulation
-            if strike < spot: # ITM
-                ce_ltp = (spot - strike) + random.uniform(40, 60)
-            else: # OTM
-                ce_ltp = max(2.0, 100 - (dist * 0.4) + random.uniform(-5, 5))
-                
-            # Put LTP Simulation
-            if strike > spot: # ITM
-                pe_ltp = (strike - spot) + random.uniform(40, 60)
-            else: # OTM
-                pe_ltp = max(2.0, 100 - (dist * 0.4) + random.uniform(-5, 5))
+            # Simulation logic
+            ce_ltp = (spot - strike) + random.uniform(40, 60) if strike < spot else max(2.0, 100 - (dist * 0.4) + random.uniform(-5, 5))
+            pe_ltp = (strike - spot) + random.uniform(40, 60) if strike > spot else max(2.0, 100 - (dist * 0.4) + random.uniform(-5, 5))
 
             strikes.append({
                 "strike": strike,
@@ -101,7 +93,6 @@ def get_option_chain():
                     "oi": round(random.uniform(30, 95), 2),
                     "chgOi": round(random.uniform(-10, 20), 2),
                     "vol": random.randint(200000, 1200000),
-                    "iv": round(random.uniform(12, 18), 2),
                     "ltp": round(ce_ltp, 2),
                     "chg": round(random.uniform(-15, 15), 2),
                     "isITM": strike < spot
@@ -110,7 +101,6 @@ def get_option_chain():
                     "oi": round(random.uniform(30, 95), 2),
                     "chgOi": round(random.uniform(-10, 20), 2),
                     "vol": random.randint(200000, 1200000),
-                    "iv": round(random.uniform(12, 18), 2),
                     "ltp": round(pe_ltp, 2),
                     "chg": round(random.uniform(-15, 15), 2),
                     "isITM": strike > spot
@@ -121,7 +111,7 @@ def get_option_chain():
             "status": "success",
             "spot": round(spot, 2),
             "atm": atm_strike,
-            "expiry": "14-May-2026", # You can update this weekly
+            "expiry": "18-Jun-2026", 
             "timestamp": timestamp,
             "chain": strikes
         }
