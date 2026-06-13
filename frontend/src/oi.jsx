@@ -5,39 +5,33 @@ import { ShieldAlert, Zap, TrendingDown, TrendingUp, Crosshair, Clock, ArrowLeft
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
 
-// 🔥 ONLY MOBILE CSS: 100% Fixed Center Strike + Shadow
-const oiMobileFixStyles = `
-  .pro-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+// 🔥 PRO MOBILE CSS: 100% Safe, No Overlaps, No Data Mixing
+const safeMobileStyles = `
+  .pro-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
   .pro-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .pro-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
 
   @media (max-width: 768px) {
-    .oi-app-root { width: 100vw !important; overflow-x: hidden !important; overflow-y: auto !important; position: absolute !important; }
-    .oi-nav { flex-direction: column !important; align-items: flex-start !important; padding: 15px !important; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .oi-nav-right { width: 100%; display: flex; justify-content: space-between; }
+    .safe-root { position: fixed !important; inset: 0 !important; overflow-y: auto !important; overflow-x: hidden !important; background: #0b0f19 !important; z-index: 1 !important; }
     
-    .oi-main-wrap { padding: 15px 0 !important; } 
-    .oi-grid-wrap { padding: 0 15px !important; margin-bottom: 20px; } 
-    .oi-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
-    .oi-overall-box { flex-direction: column !important; text-align: center; gap: 15px; }
+    /* Navbar fixed at top, absolutely no overlap */
+    .safe-nav { position: sticky !important; top: 0 !important; z-index: 1000 !important; flex-direction: column !important; align-items: flex-start !important; padding: 15px !important; gap: 15px !important; background: rgba(11, 15, 25, 0.98) !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+    .safe-nav-row { width: 100% !important; display: flex !important; justify-content: space-between !important; align-items: center !important; }
+    
+    .safe-main { padding: 15px !important; } 
+    .safe-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+    .safe-overall { flex-direction: column !important; text-align: center !important; gap: 15px !important; }
 
-    .table-wrapper { border-radius: 0 !important; border: none !important; width: 100vw !important; margin: 0 !important; }
-    .table-scroll-container { width: 100vw !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; padding: 0 !important; }
+    /* Bulletproof Table Container */
+    .safe-table-card { border-radius: 12px !important; margin: 0 !important; width: 100% !important; border: 1px solid rgba(255,255,255,0.1) !important; background: #131826 !important; }
+    .table-scroll-container { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; padding-bottom: 5px !important; }
     
-    table { border-collapse: separate !important; border-spacing: 0 !important; } 
+    table { width: 100% !important; min-width: 900px !important; border-collapse: collapse !important; }
     th, td { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
-    tr { border-bottom: none !important; }
     
-    .strike-col {
-      position: -webkit-sticky !important;
-      position: sticky !important;
-      left: calc(50vw - 40px) !important;  
-      right: calc(50vw - 40px) !important; 
-      width: 80px !important; min-width: 80px !important; max-width: 80px !important;
-      background-color: #0f1422 !important;
-      z-index: 50 !important;
-      box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.9) !important;
-    }
+    /* Distinct Strike Column without sticky bugs */
+    .strike-col { background-color: #0f1422 !important; border-left: 1px solid rgba(255,255,255,0.1) !important; border-right: 1px solid rgba(255,255,255,0.1) !important; }
+  }
 `;
 
 const OIDashboard = ({ onBack }) => {
@@ -57,7 +51,7 @@ const OIDashboard = ({ onBack }) => {
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
-    styleSheet.innerText = oiMobileFixStyles;
+    styleSheet.innerText = safeMobileStyles;
     document.head.appendChild(styleSheet);
     fetchLiveOptionChain();
     const now = new Date();
@@ -69,6 +63,7 @@ const OIDashboard = ({ onBack }) => {
     return () => { if (interval) clearInterval(interval); document.head.removeChild(styleSheet); };
   }, []);
 
+  // 🔥 MAGIC AUTO-CENTER SCROLL 🔥
   useEffect(() => {
     if (chainData) {
       setTimeout(() => {
@@ -76,7 +71,7 @@ const OIDashboard = ({ onBack }) => {
         if (container && window.innerWidth <= 768) {
           container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
         }
-      }, 50); 
+      }, 100); 
     }
   }, [chainData]);
 
@@ -110,12 +105,11 @@ const OIDashboard = ({ onBack }) => {
   };
 
   return (
-    <div className="pro-scrollbar oi-app-root" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, height: '100vh', backgroundColor: '#0b0f19', width: '100%', color: '#cbd5e1', fontFamily: '"Inter", sans-serif', overflowY: 'auto', overflowX: 'hidden', paddingBottom: '80px', zIndex: 100 }}>
+    <div className="pro-scrollbar safe-root" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, height: '100vh', backgroundColor: '#0b0f19', width: '100%', color: '#cbd5e1', fontFamily: '"Inter", sans-serif', overflowY: 'auto', overflowX: 'hidden', paddingBottom: '80px', zIndex: 100 }}>
       
-      {/* 🔥 FIX: Nav zIndex set to 999 to stay ABOVE the strike column 🔥 */}
-      <div className="oi-nav" style={{ position: 'sticky', top: 0, zIndex: 999, backgroundColor: 'rgba(11, 15, 25, 0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="safe-nav" style={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: 'rgba(11, 15, 25, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'transparent', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
+          <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
             <ArrowLeft size={16} /> Back
           </button>
           <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#fff', margin: 0, letterSpacing: '-0.5px' }}>
@@ -123,7 +117,7 @@ const OIDashboard = ({ onBack }) => {
           </h1>
         </div>
 
-        <div className="oi-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className="safe-nav-row" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#94a3b8', padding: '6px 12px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
             <span>Spot:</span> <span style={{ color: '#fff', fontWeight: 'bold' }}>{chainData.spot}</span>
           </div>
@@ -139,14 +133,14 @@ const OIDashboard = ({ onBack }) => {
         </div>
       </div>
 
-      <div className="oi-main-wrap" style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px' }}>
+      <div className="safe-main" style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px' }}>
         
-        <motion.div className="oi-grid-wrap" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
             <ShieldAlert color="#38bdf8" size={18} />
             <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#fff', margin: 0 }}>Smart Data Engine (Live PCR: {pcr.toFixed(2)})</h2>
           </div>
-          <div className="oi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+          <div className="safe-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             <div style={{ padding: '20px', backgroundColor: '#131826', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Call Resistance</div>
               <div style={{ fontSize: '15px', fontWeight: '800', color: '#ef4444', marginBottom: '6px' }}>{algoAnalysis.callOTM.status}</div>
@@ -158,7 +152,7 @@ const OIDashboard = ({ onBack }) => {
               <div style={{ fontSize: '13px', color: '#94a3b8' }}>{algoAnalysis.putOTM.desc}</div>
             </div>
           </div>
-          <div className="oi-overall-box" style={{ padding: '24px', backgroundColor: '#131826', borderRadius: '10px', border: `1px solid ${algoAnalysis.overall.color}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="safe-overall" style={{ padding: '24px', backgroundColor: '#131826', borderRadius: '10px', border: `1px solid ${algoAnalysis.overall.color}30`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
             <div>
               <div style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}><Info size={14} style={{display:'inline', verticalAlign:'middle'}}/> Overall Prediction</div>
               <div style={{ fontSize: '28px', fontWeight: '900', color: algoAnalysis.overall.color }}>{algoAnalysis.overall.status}</div>
@@ -169,16 +163,17 @@ const OIDashboard = ({ onBack }) => {
           </div>
         </motion.div>
 
-        <div className="table-wrapper" style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(237, 25, 25, 0.05)', overflow: 'hidden', marginBottom: '40px', marginTop: '20px' }}>
-          <div className="table-scroll-container pro-scrollbar" style={{ overflowX: 'auto', width: '100%', paddingBottom: '8px', position: 'relative' }}>
-            <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'center', fontSize: '13px' }}>
+        {/* 🔥 SAFE TABLE: No stickiness, just pure horizontal scroll with distinct Strike column 🔥 */}
+        <div className="safe-table-card" style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', marginBottom: '40px' }}>
+          <div className="table-scroll-container pro-scrollbar" style={{ overflowX: 'auto', width: '100%', paddingBottom: '8px' }}>
+            <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px' }}>
               <thead>
-                <tr>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <th colSpan="5" style={{ padding: '12px 16px', backgroundColor: 'rgba(255,255,255,0.02)', color: '#94a3b8', fontWeight: '600' }}>CALLS</th>
                   <th className="strike-col" style={{ width: '80px', padding: '12px 0', backgroundColor: '#0f1422', borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)', color: '#fff', fontWeight: 'bold' }}>STRIKE</th>
                   <th colSpan="5" style={{ padding: '12px 16px', backgroundColor: 'rgba(255,255,255,0.02)', color: '#94a3b8', fontWeight: '600' }}>PUTS</th>
                 </tr>
-                <tr style={{ color: '#64748b' }}>
+                <tr style={{ color: '#64748b', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <th style={{ padding: '12px' }}>OI (L)</th>
                   <th style={{ padding: '12px' }}>Chg OI</th>
                   <th style={{ padding: '12px' }}>Volume</th>

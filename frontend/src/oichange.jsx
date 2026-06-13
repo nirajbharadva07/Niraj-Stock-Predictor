@@ -6,40 +6,31 @@ import { ArrowLeft, Zap, TrendingUp, TrendingDown, Info, Crosshair, AlertTriangl
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
 
-// 🔥 ONLY MOBILE CSS: LEFT & RIGHT DUAL LOCK (100% Center Fixed)
-const oicMobileFixStyles = `
-  .pro-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+// 🔥 PRO MOBILE CSS: 100% Safe, No Overlaps, No Data Mixing
+const safeMobileStyles = `
+  .pro-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
   .pro-scrollbar::-webkit-scrollbar-track { background: transparent; }
   .pro-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
 
   @media (max-width: 768px) {
-    .oic-app-root { width: 100vw !important; overflow-x: hidden !important; overflow-y: auto !important; position: absolute !important; }
-    .oic-nav { flex-direction: column !important; align-items: flex-start !important; padding: 15px !important; gap: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .oic-nav-right { width: 100%; display: flex; justify-content: space-between; }
+    .safe-root { position: fixed !important; inset: 0 !important; overflow-y: auto !important; overflow-x: hidden !important; background: #0b0f19 !important; z-index: 1 !important; }
     
-    .oic-main-wrap { padding: 15px 0 !important; }
-    .oic-chart-card { height: 300px !important; margin: 0 15px 20px 15px !important; padding: 15px 5px !important; }
-    .oic-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; padding: 0 15px !important; margin-bottom: 20px !important; }
-    .oic-overall-box { grid-column: 1 / -1; flex-direction: column !important; text-align: center; gap: 15px; }
+    .safe-nav { position: sticky !important; top: 0 !important; z-index: 1000 !important; flex-direction: column !important; align-items: flex-start !important; padding: 15px !important; gap: 15px !important; background: rgba(11, 15, 25, 0.98) !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+    .safe-nav-row { width: 100% !important; display: flex !important; justify-content: space-between !important; align-items: center !important; }
+    
+    .safe-main { padding: 15px !important; }
+    .safe-chart-card { height: 320px !important; margin-bottom: 20px !important; padding: 15px 5px !important; }
+    .safe-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-bottom: 20px !important; }
+    .safe-overall { grid-column: 1 / -1 !important; flex-direction: column !important; text-align: center; gap: 15px; }
 
-    .table-wrapper { border-radius: 0 !important; border: none !important; margin: 0 !important; width: 100vw !important; }
-    .table-scroll-container { width: 100vw !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; padding: 0 !important; }
+    /* Bulletproof Table Container */
+    .safe-table-card { border-radius: 12px !important; margin: 0 !important; width: 100% !important; border: 1px solid rgba(255,255,255,0.1) !important; background: #131826 !important; }
+    .table-scroll-container { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; padding-bottom: 5px !important; }
     
-    table { border-collapse: separate !important; border-spacing: 0 !important; } 
+    table { width: 100% !important; min-width: 900px !important; border-collapse: collapse !important; }
     th, td { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
-    tr { border-bottom: none !important; }
     
-    .strike-col {
-      position: -webkit-sticky !important;
-      position: sticky !important;
-      left: calc(50vw - 40px) !important;  
-      right: calc(50vw - 40px) !important; 
-      width: 80px !important; min-width: 80px !important; max-width: 80px !important;
-      background-color: #0f1422 !important;
-      z-index: 50 !important;
-      box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.9) !important;
-    }
-    th.strike-col { z-index: 55 !important; background-color: #0f1422 !important; }
+    .strike-col { background-color: #0f1422 !important; border-left: 1px solid rgba(255,255,255,0.1) !important; border-right: 1px solid rgba(255,255,255,0.1) !important; }
   }
 `;
 
@@ -67,7 +58,7 @@ const OIChangeDashboard = ({ onBack }) => {
 
   useEffect(() => {
     const styleSheet = document.createElement("style");
-    styleSheet.innerText = oicMobileFixStyles;
+    styleSheet.innerText = safeMobileStyles;
     document.head.appendChild(styleSheet);
     
     fetchLiveOptionChain();
@@ -75,6 +66,7 @@ const OIChangeDashboard = ({ onBack }) => {
     return () => { clearInterval(interval); document.head.removeChild(styleSheet); };
   }, []);
 
+  // 🔥 MAGIC AUTO-CENTER SCROLL 🔥
   useEffect(() => {
     if (data) {
       setTimeout(() => {
@@ -116,19 +108,18 @@ const OIChangeDashboard = ({ onBack }) => {
   else if (netMomentum < -5) { trendLabel = "MILD BEARISH"; trendColor = "#f87171"; }
 
   return (
-    <div className="pro-scrollbar oic-app-root" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, height: '100vh', backgroundColor: '#0b0f19', width: '100%', color: '#cbd5e1', fontFamily: '"Inter", sans-serif', overflowY: 'auto', overflowX: 'hidden', paddingBottom: '80px', zIndex: 100 }}>
+    <div className="pro-scrollbar safe-root" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, height: '100vh', backgroundColor: '#0b0f19', width: '100%', color: '#cbd5e1', fontFamily: '"Inter", sans-serif', overflowY: 'auto', overflowX: 'hidden', paddingBottom: '80px', zIndex: 100 }}>
       
-      {/* 🔥 FIX: Nav zIndex set to 999 to stay ABOVE the strike column 🔥 */}
-      <div className="oic-nav" style={{ position: 'sticky', top: 0, zIndex: 999, backgroundColor: 'rgba(11, 15, 25, 0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="safe-nav" style={{ position: 'sticky', top: 0, zIndex: 1000, backgroundColor: 'rgba(11, 15, 25, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'transparent', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
+          <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'rgba(255,255,255,0.05)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600', fontSize: '13px' }}>
             <ArrowLeft size={16} /> Back
           </button>
           <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#fff', margin: 0, letterSpacing: '-0.5px' }}>
             NIFTY <span style={{ fontWeight: '400', color: '#10b981' }}>OI Change</span>
           </h1>
         </div>
-        <div className="oic-nav-right" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className="safe-nav-row" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#94a3b8', padding: '6px 12px', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
             <span>Spot:</span> <span style={{ color: '#fff', fontWeight: 'bold' }}>{data.spot}</span>
           </div>
@@ -138,9 +129,9 @@ const OIChangeDashboard = ({ onBack }) => {
         </div>
       </div>
 
-      <div className="oic-main-wrap" style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px' }}>
+      <div className="safe-main" style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px' }}>
         
-        <motion.div className="oic-chart-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', padding: '24px', marginBottom: '32px', height: '400px' }}>
+        <motion.div className="safe-chart-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', padding: '24px', marginBottom: '32px', height: '400px' }}>
           <h2 style={{ fontSize: '14px', color: '#94a3b8', margin: '0 0 20px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Crosshair size={16} /> Strike-wise OI Addition / Unwinding (Lakhs)
           </h2>
@@ -156,7 +147,7 @@ const OIChangeDashboard = ({ onBack }) => {
           </ResponsiveContainer>
         </motion.div>
 
-        <motion.div className="oic-grid" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '20px', marginBottom: '32px' }}>
+        <motion.div className="safe-grid" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: '20px', marginBottom: '32px' }}>
           <div style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '24px' }}>
             <div style={{ fontSize: '12px', color: '#ef4444', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Total Call Change</div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff' }}>{totalCallOIChg.toFixed(1)} <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 'normal' }}>L</span></div>
@@ -165,7 +156,7 @@ const OIChangeDashboard = ({ onBack }) => {
             <div style={{ fontSize: '12px', color: '#10b981', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Total Put Change</div>
             <div style={{ fontSize: '24px', fontWeight: '900', color: '#fff' }}>{totalPutOIChg.toFixed(1)} <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 'normal' }}>L</span></div>
           </div>
-          <div className="oic-overall-box" style={{ backgroundColor: '#131826', borderRadius: '12px', border: `1px solid ${trendColor}40`, padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="safe-overall" style={{ backgroundColor: '#131826', borderRadius: '12px', border: `1px solid ${trendColor}40`, padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '8px' }}>Institutional Momentum</div>
               <div style={{ fontSize: '24px', fontWeight: '900', color: trendColor }}>{trendLabel}</div>
@@ -176,9 +167,10 @@ const OIChangeDashboard = ({ onBack }) => {
           </div>
         </motion.div>
 
-        <motion.div className="table-wrapper" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+        {/* 🔥 SAFE TABLE: No stickiness, pure clean scroll 🔥 */}
+        <motion.div className="safe-table-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
           <div className="table-scroll-container pro-scrollbar" style={{ overflowX: 'auto', width: '100%', position: 'relative' }}>
-            <table style={{ width: '100%', minWidth: '800px', borderCollapse: 'separate', borderSpacing: 0, textAlign: 'center', fontSize: '13px' }}>
+            <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px' }}>
               <thead>
                 <tr>
                   <th style={{ padding: '16px', fontWeight: '500', color: '#64748b', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>Call OI Chg</th>

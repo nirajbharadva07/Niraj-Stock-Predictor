@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { ShieldCheck, Activity, Calendar, Zap, TrendingUp, TrendingDown, Radio, Menu, X, BarChart2, Database } from 'lucide-react';
+import { ShieldCheck, Activity, Calendar, Zap, TrendingUp, TrendingDown, Radio, Menu, X, BarChart2 } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import Hero3D from './Hero3D';
 import OIDashboard from './oi'; 
@@ -45,11 +45,8 @@ const StatPill = ({ label, value, accent }) => (
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
 
-// 🔥 PRO MOBILE CSS: Wobble Fix & Text Cut Fix
+// 🔥 MOBILE CSS: Ensures prediction area fits perfectly on small screens 🔥
 const mobileFixStyles = `
-  /* Global Wobble Fix */
-  body, html { max-width: 100%; overflow-x: hidden; }
-  
   @media (max-width: 768px) {
     .app-root { width: 100% !important; overflow-x: hidden !important; overflow-y: auto !important; position: absolute !important; }
     .content { display: flex !important; flex-direction: column !important; padding: 15px !important; overflow: visible !important; }
@@ -59,15 +56,8 @@ const mobileFixStyles = `
     
     .prediction-card { margin: 0 0 20px 0 !important; padding: 25px 20px !important; width: 100% !important; box-sizing: border-box !important; }
     
-    /* 🔥 Fix for DOWN text cutting off */
-    .prediction-word { 
-      font-size: 4rem !important; 
-      margin: 10px 0 20px 0 !important; 
-      line-height: 1.1 !important; 
-      white-space: normal !important; 
-      overflow: visible !important; 
-      text-overflow: clip !important; 
-    }
+    /* 🔥 Fixed for text cutting off on small mobile phones 🔥 */
+    .prediction-word { font-size: clamp(3rem, 15vw, 6rem) !important; margin: 10px 0 20px 0 !important; line-height: 1.1 !important; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; }
     
     .chart-card { margin: 0 !important; width: 100% !important; box-sizing: border-box !important; height: 350px !important; padding: 20px 15px !important; }
     
@@ -166,7 +156,8 @@ function App() {
             <div className="prediction-badge" style={{ background: predColorDim, borderColor: predColor }}>
               {isUp ? <TrendingUp size={20} color={predColor} /> : <TrendingDown size={20} color={predColor} />}
             </div>
-            <motion.h1 className="prediction-word" style={{ color: predColor, textShadow: `0 0 60px ${predColor}66` }} initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 120 }}>
+            {/* 🔥 Optimized prediction area on Desktop: Consistent prediction 🔥 */}
+            <motion.h1 className="prediction-word" style={{ color: predColor, textShadow: `0 0 60px ${predColor}66`, display: 'block', textTransform: 'uppercase' }} initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 120 }}>
               <ProtectedValue value={data.prediction} />
             </motion.h1>
             <div className="confidence-bar-wrap">
