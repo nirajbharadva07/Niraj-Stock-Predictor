@@ -1,3 +1,5 @@
+import os
+import sys
 import yfinance as yf
 import pandas as pd
 import joblib
@@ -7,6 +9,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from datetime import datetime
 import random
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'stock_model.pkl')
+SCALER_PATH = os.path.join(BASE_DIR, 'scaler.pkl')
+
+sys.path.insert(0, BASE_DIR)
 
 app = FastAPI()
 
@@ -24,8 +32,8 @@ model_load_error = None
 
 def try_load_model_files():
     global model, scaler
-    model = joblib.load('stock_model.pkl')
-    scaler = joblib.load('scaler.pkl')
+    model = joblib.load(MODEL_PATH)
+    scaler = joblib.load(SCALER_PATH)
 
 @app.on_event("startup")
 def startup_event():

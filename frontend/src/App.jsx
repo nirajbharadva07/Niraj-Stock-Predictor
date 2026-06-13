@@ -175,8 +175,8 @@ function App() {
 
           <motion.section className="card chart-card" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}>
             <div className="card-eyebrow"><Activity size={13} /> Nifty 30-Day Trend Pulse</div>
-            <div className="chart-wrap">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="chart-wrap" style={{ minHeight: 320, minWidth: 0 }}>
+              <ResponsiveContainer width="100%" height={320} minWidth={0}>
                 <AreaChart data={data.chart_data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
