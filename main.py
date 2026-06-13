@@ -22,16 +22,28 @@ model = None
 scaler = None
 fallback_mode = False
 
+def try_load_model_files():
+    global model, scaler
+    model = joblib.load('stock_model.pkl')
+    scaler = joblib.load('scaler.pkl')
+
 @app.on_event("startup")
 def startup_event():
     global model, scaler, fallback_mode
     try:
-        model = joblib.load('stock_model.pkl')
-        scaler = joblib.load('scaler.pkl')
+        try_load_model_files()
         print(">>> NIRAJ AI ENGINE: MODELS LOADED")
     except Exception as e:
-        print(f">>> ASSET ERROR: {e}. Switching to ALGO FALLBACK MODE.")
-        fallback_mode = True # Agar .pkl fail hua toh ye system ko zinda rakhega
+        print(f">>> MODEL LOAD ERROR: {e}. Attempting to rebuild model from data...")
+        try:
+            from data_model import build_stock_model
+            build_stock_model()
+            try_load_model_files()
+            fallback_mode = False
+            print(">>> NIRAJ AI ENGINE: MODEL REBUILT AND LOADED")
+        except Exception as build_exc:
+            print(f">>> MODEL BUILD FAILED: {build_exc}. Switching to ALGO FALLBACK MODE.")
+            fallback_mode = True  # Agar .pkl fail hua toh ye system ko zinda rakhega
 
 @app.get("/predict")
 def predict():
