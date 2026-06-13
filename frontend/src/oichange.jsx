@@ -6,7 +6,6 @@ import { ArrowLeft, Zap, TrendingUp, TrendingDown, Info, Crosshair, AlertTriangl
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
 
-// 🔥 PRO MOBILE CSS: 100% Safe, No Overlaps, No Data Mixing
 const safeMobileStyles = `
   .pro-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
   .pro-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -23,7 +22,6 @@ const safeMobileStyles = `
     .safe-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; margin-bottom: 20px !important; }
     .safe-overall { grid-column: 1 / -1 !important; flex-direction: column !important; text-align: center; gap: 15px; }
 
-    /* Bulletproof Table Container */
     .safe-table-card { border-radius: 12px !important; margin: 0 !important; width: 100% !important; border: 1px solid rgba(255,255,255,0.1) !important; background: #131826 !important; }
     .table-scroll-container { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; padding-bottom: 5px !important; }
     
@@ -49,7 +47,9 @@ const OIChangeDashboard = ({ onBack }) => {
 
   const fetchLiveOptionChain = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/option-chain`);
+      // 🔥 CACHE BUSTER ADDED HERE
+      const timestamp = new Date().getTime();
+      const res = await axios.get(`${API_BASE_URL}/option-chain?t=${timestamp}`);
       if (res.data.status === 'success') { setData(res.data); setError(null); } 
       else { setError(res.data.message); }
     } catch (err) { setError("Failed to connect to Python backend."); } 
@@ -66,7 +66,6 @@ const OIChangeDashboard = ({ onBack }) => {
     return () => { clearInterval(interval); document.head.removeChild(styleSheet); };
   }, []);
 
-  // 🔥 MAGIC AUTO-CENTER SCROLL 🔥
   useEffect(() => {
     if (data) {
       setTimeout(() => {
@@ -79,14 +78,15 @@ const OIChangeDashboard = ({ onBack }) => {
   }, [data]);
 
   if (loading) return (
-    <div className="loader-screen" style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#10b981', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999 }}>
+    // 🔥 LOADER TEXT FIX: padding added, font-size clamped, text-align center 🔥
+    <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#10b981', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999, padding: '0 20px', boxSizing: 'border-box' }}>
       <Zap size={50} className="animate-pulse" style={{ marginBottom: '24px' }} />
-      <div style={{ fontSize: '20px', letterSpacing: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>Mapping Intraday Momentum...</div>
+      <div style={{ fontSize: 'clamp(14px, 4vw, 20px)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold', textAlign: 'center', width: '100%', wordWrap: 'break-word' }}>Mapping Intraday Momentum...</div>
     </div>
   );
 
   if (error || !data) return (
-    <div className="error-screen" style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#ef4444', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999 }}>
+    <div className="error-screen" style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#ef4444', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999, padding: '0 20px', textAlign: 'center', boxSizing: 'border-box' }}>
       <AlertTriangle size={50} style={{ marginBottom: '24px' }} />
       <div style={{ fontSize: '16px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold' }}>{error}</div>
       <button onClick={onBack} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Go Back</button>
@@ -167,7 +167,6 @@ const OIChangeDashboard = ({ onBack }) => {
           </div>
         </motion.div>
 
-        {/* 🔥 SAFE TABLE: No stickiness, pure clean scroll 🔥 */}
         <motion.div className="safe-table-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
           <div className="table-scroll-container pro-scrollbar" style={{ overflowX: 'auto', width: '100%', position: 'relative' }}>
             <table style={{ width: '100%', minWidth: '900px', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px' }}>

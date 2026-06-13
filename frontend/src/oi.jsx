@@ -5,7 +5,6 @@ import { ShieldAlert, Zap, TrendingDown, TrendingUp, Crosshair, Clock, ArrowLeft
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
 
-// 🔥 PRO MOBILE CSS: 100% Safe, No Overlaps, No Data Mixing
 const safeMobileStyles = `
   .pro-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
   .pro-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -14,7 +13,6 @@ const safeMobileStyles = `
   @media (max-width: 768px) {
     .safe-root { position: fixed !important; inset: 0 !important; overflow-y: auto !important; overflow-x: hidden !important; background: #0b0f19 !important; z-index: 1 !important; }
     
-    /* Navbar fixed at top, absolutely no overlap */
     .safe-nav { position: sticky !important; top: 0 !important; z-index: 1000 !important; flex-direction: column !important; align-items: flex-start !important; padding: 15px !important; gap: 15px !important; background: rgba(11, 15, 25, 0.98) !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
     .safe-nav-row { width: 100% !important; display: flex !important; justify-content: space-between !important; align-items: center !important; }
     
@@ -22,14 +20,12 @@ const safeMobileStyles = `
     .safe-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
     .safe-overall { flex-direction: column !important; text-align: center !important; gap: 15px !important; }
 
-    /* Bulletproof Table Container */
     .safe-table-card { border-radius: 12px !important; margin: 0 !important; width: 100% !important; border: 1px solid rgba(255,255,255,0.1) !important; background: #131826 !important; }
     .table-scroll-container { width: 100% !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; padding-bottom: 5px !important; }
     
     table { width: 100% !important; min-width: 900px !important; border-collapse: collapse !important; }
     th, td { border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
     
-    /* Distinct Strike Column without sticky bugs */
     .strike-col { background-color: #0f1422 !important; border-left: 1px solid rgba(255,255,255,0.1) !important; border-right: 1px solid rgba(255,255,255,0.1) !important; }
   }
 `;
@@ -42,7 +38,9 @@ const OIDashboard = ({ onBack }) => {
 
   const fetchLiveOptionChain = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/option-chain`);
+      // 🔥 CACHE BUSTER 🔥
+      const timestamp = new Date().getTime();
+      const res = await axios.get(`${API_BASE_URL}/option-chain?t=${timestamp}`);
       if (res.data.status === 'success') { setChainData(res.data); setError(null); } 
       else { setError(res.data.message); }
     } catch (err) { setError("Failed to connect to Python backend."); } 
@@ -63,7 +61,6 @@ const OIDashboard = ({ onBack }) => {
     return () => { if (interval) clearInterval(interval); document.head.removeChild(styleSheet); };
   }, []);
 
-  // 🔥 MAGIC AUTO-CENTER SCROLL 🔥
   useEffect(() => {
     if (chainData) {
       setTimeout(() => {
@@ -76,15 +73,16 @@ const OIDashboard = ({ onBack }) => {
   }, [chainData]);
 
   if (loading) return (
-    <div className="loader-screen" style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#22d3ee', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999 }}>
-      <Zap style={{ marginBottom: '24px' }} size={50} className="animate-pulse" />
-      <div style={{ fontSize: '20px', letterSpacing: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>Fetching Live NSE Data...</div>
+    // 🔥 LOADER TEXT FIX 🔥
+    <div style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#22d3ee', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999, padding: '0 20px', boxSizing: 'border-box' }}>
+      <Zap size={50} className="animate-pulse" style={{ marginBottom: '24px' }} />
+      <div style={{ fontSize: 'clamp(14px, 4vw, 20px)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold', textAlign: 'center', width: '100%', wordWrap: 'break-word' }}>Fetching Live NSE Data...</div>
     </div>
   );
 
   if (error || !chainData) return (
-    <div className="error-screen" style={{ height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#ef4444', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999 }}>
-      <AlertTriangle style={{ marginBottom: '24px' }} size={50} />
+    <div className="error-screen" style={{ height: '100vh', width: '100vw', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0b0f19', color: '#ef4444', fontFamily: 'monospace', position: 'fixed', inset: 0, zIndex: 999, padding: '0 20px', textAlign: 'center', boxSizing: 'border-box' }}>
+      <AlertTriangle size={50} style={{ marginBottom: '24px' }} />
       <div style={{ fontSize: '16px', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 'bold' }}>{error}</div>
       <button onClick={onBack} style={{ marginTop: '20px', padding: '10px 20px', backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Go Back</button>
     </div>
@@ -163,7 +161,6 @@ const OIDashboard = ({ onBack }) => {
           </div>
         </motion.div>
 
-        {/* 🔥 SAFE TABLE: No stickiness, just pure horizontal scroll with distinct Strike column 🔥 */}
         <div className="safe-table-card" style={{ backgroundColor: '#131826', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', marginBottom: '40px' }}>
           <div className="table-scroll-container pro-scrollbar" style={{ overflowX: 'auto', width: '100%', paddingBottom: '8px' }}>
             <table style={{ width: '100%', minWidth: '1000px', borderCollapse: 'collapse', textAlign: 'center', fontSize: '13px' }}>
