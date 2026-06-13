@@ -32,21 +32,29 @@ model_load_error = None
 
 def try_load_model_files():
     global model, scaler
+    if not os.path.exists(MODEL_PATH):
+        raise FileNotFoundError(f"Missing model file at {MODEL_PATH}")
+    if not os.path.exists(SCALER_PATH):
+        raise FileNotFoundError(f"Missing scaler file at {SCALER_PATH}")
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
+
+def ensure_model_loaded():
+    if model is None or scaler is None:
+        try_load_model_files()
 
 @app.on_event("startup")
 def startup_event():
     global model_load_error
     try:
-        try_load_model_files()
+        ensure_model_loaded()
         print(">>> NIRAJ AI ENGINE: MODELS LOADED")
     except Exception as e:
         print(f">>> MODEL LOAD ERROR: {e}. Attempting to rebuild model from data...")
         try:
             from data_model import build_stock_model
             build_stock_model()
-            try_load_model_files()
+            ensure_model_loaded()
             print(">>> NIRAJ AI ENGINE: MODEL REBUILT AND LOADED")
         except Exception as build_exc:
             model_load_error = str(build_exc)
@@ -63,8 +71,7 @@ def status():
 @app.get("/predict")
 def predict():
     try:
-        if model is None or scaler is None:
-            raise RuntimeError('Model is not loaded. Deploy with stock_model.pkl or allow model build.')
+        ensure_model_loaded()
         nifty_data = yf.download('^NSEI', period='60d', progress=False)['Close']
         vix_data = yf.download('^INDIAVIX', period='60d', progress=False)['Close']
         us_data = yf.download('^GSPC', period='60d', progress=False)['Close']
