@@ -2,58 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { ShieldCheck, Activity, Calendar, Zap, TrendingUp, TrendingDown, Radio, Menu, X, BarChart2 } from 'lucide-react';
+import { ShieldCheck, Activity, Calendar, Zap, TrendingUp, TrendingDown, Radio, Menu, X, BarChart2, Database } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import Hero3D from './Hero3D';
 import OIDashboard from './oi'; 
 import OIChangeDashboard from './oichange';
 import './App.css';
-
-// ── RESPONSIVE MOBILE STYLES (Injected Globally) ──
-export const globalResponsiveStyles = `
-  .pro-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
-  .pro-scrollbar::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
-  .pro-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-  .pro-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
-  .pro-scrollbar { -webkit-overflow-scrolling: touch; }
-
-  @media (max-width: 768px) {
-    .app-root { padding: 10px; overflow-x: hidden; }
-    .layout { padding: 0 !important; }
-    .topbar { flex-direction: column; gap: 15px; align-items: flex-start !important; padding: 20px 15px !important; background: rgba(11, 15, 25, 0.95); }
-    .nav-chips { width: 100%; display: flex; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; gap: 8px; -webkit-overflow-scrolling: touch; justify-content: flex-start; }
-    .nav-chips .chip { white-space: nowrap; flex-shrink: 0; padding: 8px 14px; }
-    
-    .prediction-card { padding: 20px !important; margin-bottom: 15px !important; }
-    .prediction-word { font-size: 3.5rem !important; margin: 10px 0 !important; }
-    .metrics-row { flex-direction: column; gap: 12px; }
-    .divider-v { display: none; }
-    .stat-pill { width: 100%; justify-content: space-between; padding: 15px !important; background: rgba(255,255,255,0.03); border-radius: 10px; }
-    
-    .chart-card { padding: 15px !important; height: 350px !important; }
-    
-    .footer { flex-direction: column; gap: 12px; align-items: center; padding: 20px !important; text-align: center; border-radius: 12px; margin-top: 20px; }
-    .footer-sep { display: none; }
-
-    /* OI & OI Change Mobile Styles */
-    .oi-header { flex-direction: column; gap: 15px; align-items: flex-start !important; padding: 15px !important; }
-    .oi-header-right { flex-wrap: wrap; width: 100%; gap: 8px !important; justify-content: space-between !important; }
-    .oi-header-right > div { flex: 1 1 calc(50% - 8px); justify-content: center; text-align: center; }
-    
-    .oi-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
-    .oi-grid > div { padding: 15px !important; }
-    
-    .oi-momentum-grid { grid-template-columns: 1fr !important; gap: 15px !important; }
-    .oi-overall-box { flex-direction: column; text-align: center; gap: 15px; justify-content: center !important; padding: 20px !important; }
-    .oi-table-container { border-radius: 8px; margin: 0 10px; }
-  }
-
-  @media (max-width: 480px) {
-    .oi-grid { grid-template-columns: 1fr !important; }
-    .prediction-word { font-size: 3rem !important; }
-    .brand { font-size: 1.1rem; }
-  }
-`;
 
 // ── PROTECTED VALUE HOOK ──
 function useProtectedValue(value) {
@@ -83,13 +37,50 @@ function ProtectedValue({ value, className, style }) {
 }
 
 const StatPill = ({ label, value, accent }) => (
-  <div className="stat-pill" style={{ display: 'flex', alignItems: 'center' }}>
-    <span className="stat-label" style={{ color: '#94a3b8', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{label}</span>
-    <ProtectedValue value={value} className="stat-value" style={{ fontWeight: '800', fontSize: '1.2rem', color: accent || '#fff' }} />
+  <div className="stat-pill">
+    <span className="stat-label">{label}</span>
+    <ProtectedValue value={value} className="stat-value" style={accent ? { color: accent } : {}} />
   </div>
 );
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || window.location.origin;
+
+// 🔥 PRO MOBILE CSS: Wobble Fix & Text Cut Fix
+const mobileFixStyles = `
+  /* Global Wobble Fix */
+  body, html { max-width: 100%; overflow-x: hidden; }
+  
+  @media (max-width: 768px) {
+    .app-root { width: 100% !important; overflow-x: hidden !important; overflow-y: auto !important; position: absolute !important; }
+    .content { display: flex !important; flex-direction: column !important; padding: 15px !important; overflow: visible !important; }
+    
+    .topbar { flex-direction: column !important; align-items: flex-start !important; padding: 20px 15px !important; gap: 15px !important; height: auto !important; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .nav-chips { flex-wrap: wrap !important; gap: 8px !important; }
+    
+    .prediction-card { margin: 0 0 20px 0 !important; padding: 25px 20px !important; width: 100% !important; box-sizing: border-box !important; }
+    
+    /* 🔥 Fix for DOWN text cutting off */
+    .prediction-word { 
+      font-size: 4rem !important; 
+      margin: 10px 0 20px 0 !important; 
+      line-height: 1.1 !important; 
+      white-space: normal !important; 
+      overflow: visible !important; 
+      text-overflow: clip !important; 
+    }
+    
+    .chart-card { margin: 0 !important; width: 100% !important; box-sizing: border-box !important; height: 350px !important; padding: 20px 15px !important; }
+    
+    .metrics-row { flex-direction: column !important; gap: 12px !important; padding-top: 15px !important; }
+    .divider-v { display: none !important; }
+    .stat-pill { width: 100% !important; display: flex !important; justify-content: space-between !important; background: rgba(255,255,255,0.03) !important; padding: 15px !important; border-radius: 8px !important; }
+    
+    .footer { flex-direction: column !important; text-align: center !important; height: auto !important; padding: 25px 15px !important; gap: 12px !important; }
+    .footer-sep { display: none !important; }
+    .footer-item { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; width: 100%; display: flex; justify-content: space-between; }
+    .footer-item.dim { justify-content: center; background: transparent; margin-top: 10px; }
+  }
+`;
 
 function App() {
   const [data, setData] = useState(null);
@@ -101,40 +92,33 @@ function App() {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/predict`);
-      if (res.data && res.data.status === "success") {
-        setData(res.data);
-        setError(null);
-      } else {
-        setError("Backend Error: " + (res.data?.message || "Unknown Error"));
-      }
-    } catch (err) {
-      setError("System Offline: " + err.message);
-    } finally {
-      setLoading(false);
-    }
+      if (res.data && res.data.status === "success") { setData(res.data); setError(null); } 
+      else { setError("Backend Error: " + (res.data?.message || "Unknown Error")); }
+    } catch (err) { setError("System Offline: " + err.message); } 
+    finally { setLoading(false); }
   };
 
   useEffect(() => { 
     fetchData(); 
-    // Inject responsive styles
     const styleSheet = document.createElement("style");
-    styleSheet.innerText = globalResponsiveStyles;
+    styleSheet.innerText = mobileFixStyles;
     document.head.appendChild(styleSheet);
     return () => document.head.removeChild(styleSheet);
   }, []);
 
   if (loading) return (
-    <div className="loader-screen" style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0b0f19', color: '#22d3ee' }}>
-      <Zap size={40} className="animate-pulse" style={{ marginBottom: '20px' }} />
-      <p style={{ fontFamily: 'monospace', letterSpacing: '2px', fontWeight: 'bold' }}>INITIALIZING QUANT ENGINE</p>
+    <div className="loader-screen">
+      <div className="loader-ring" />
+      <Zap size={32} className="loader-icon" />
+      <p className="loader-text">Initializing Quant Engine</p>
     </div>
   );
 
   if (error) return (
-    <div className="error-screen" style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0b0f19', color: '#ef4444' }}>
-      <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '10px' }}>ERR_CONNECTION</div>
-      <p style={{ marginBottom: '20px', color: '#94a3b8', textAlign: 'center', padding: '0 20px' }}>{error}</p>
-      <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Retry Connection</button>
+    <div className="error-screen">
+      <div className="error-code">ERR_CONNECTION</div>
+      <p className="error-msg">{error}</p>
+      <button onClick={() => window.location.reload()} className="error-btn">Retry Connection</button>
     </div>
   );
 
@@ -148,92 +132,83 @@ function App() {
   if (activeView === 'oichange') return <OIChangeDashboard onBack={() => setActiveView('home')} />;
 
   return (
-    <div className="app-root" style={{ minHeight: '100vh', background: '#0b0f19', color: '#fff', position: 'relative' }}>
-      <div className="canvas-bg" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60vh', zIndex: 0, opacity: 0.6 }}><Hero3D prediction={data.prediction} /></div>
+    <div className="app-root">
+      <div className="canvas-bg"><Hero3D prediction={data.prediction} /></div>
+      <div className="grain" />
       
       <AnimatePresence>
         {isMenuOpen && (
-           <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '100%', maxWidth: '320px', background: 'rgba(15, 23, 42, 0.98)', borderLeft: '1px solid rgba(255,255,255,0.1)', zIndex: 999, padding: '2rem', display: 'flex', flexDirection: 'column', boxShadow: '-10px 0 30px rgba(0,0,0,0.5)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem' }}>
-                <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: '900', letterSpacing: '2px' }}>QUANT <span style={{ color: '#22d3ee' }}>TOOLS</span></div>
-                <button onClick={() => setIsMenuOpen(false)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '5px' }}><X size={28} /></button>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <button onClick={() => { setIsMenuOpen(false); setActiveView('oi'); }} style={{ display: 'flex', alignItems: 'center', gap: '15px', color: '#e2e8f0', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <BarChart2 size={20} color="#22d3ee" /> Live Option Chain (OI)
-                </button>
-                <button onClick={() => { setIsMenuOpen(false); setActiveView('oichange'); }} style={{ display: 'flex', alignItems: 'center', gap: '15px', color: '#e2e8f0', padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <Activity size={20} color="#10b981" /> OI Change Analysis
-                </button>
+           <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: '320px', background: 'rgba(15, 23, 42, 0.95)', zIndex: 100, padding: '2rem' }}>
+              <button onClick={() => setIsMenuOpen(false)} style={{ color: '#fff', background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
+                <button onClick={() => { setIsMenuOpen(false); setActiveView('oi'); }} style={{ color: '#fff', background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Live Option Chain</button>
+                <button onClick={() => { setIsMenuOpen(false); setActiveView('oichange'); }} style={{ color: '#fff', background: 'rgba(255,255,255,0.1)', padding: '10px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>OI Change Analysis</button>
               </div>
            </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="layout" style={{ position: 'relative', zIndex: 10, maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-        <nav className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 0', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '30px' }}>
-          <div className="brand" style={{ fontSize: '1.3rem', fontWeight: '900', letterSpacing: '1px' }}>NIRAJ <span style={{ color: '#22d3ee' }}>STOCK PREDICTOR</span></div>
-          <div className="nav-chips" style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => setIsMenuOpen(true)} className="chip" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '20px', background: 'rgba(34,211,238,0.1)', color: '#22d3ee', border: '1px solid rgba(34,211,238,0.3)', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>
-              <Menu size={14} /> MENU
+      <div className="layout">
+        <nav className="topbar">
+          <div className="brand">NIRAJ <span className="brand-accent">STOCK PREDICTOR</span></div>
+          <div className="nav-chips">
+            <button onClick={() => setIsMenuOpen(true)} className="chip" style={{ cursor: 'pointer', background: 'rgba(34,211,238,0.1)', borderColor: 'rgba(34,211,238,0.3)', color: '#22d3ee' }}>
+              <Menu size={12} /> MENU
             </button>
-            <span className="chip live" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '20px', background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', fontWeight: 'bold', fontSize: '0.85rem' }}>
-              <Radio size={12} className="blink" /> LIVE
-            </span>
-            <span className="chip" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.85rem' }}>
-              <Calendar size={12} /> {format(addDays(new Date(), 1), 'dd MMM')}
-            </span>
+            <span className="chip live"><Radio size={10} className="blink" /> LIVE</span>
+            <span className="chip"><Calendar size={13} /> TARGET &nbsp;{format(addDays(new Date(), 1), 'dd MMM yyyy')}</span>
           </div>
         </nav>
 
-        <main className="content" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <motion.section className="card prediction-card" style={{ background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '40px', border: '1px solid rgba(255,255,255,0.05)' }} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.9rem', fontWeight: '600', marginBottom: '20px' }}><ShieldCheck size={16} /> Neural Classification</div>
-            
-            <motion.h1 className="prediction-word" style={{ fontSize: '6rem', fontWeight: '900', margin: '20px 0', lineHeight: 1, color: predColor }} initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
+        <main className="content">
+          <motion.section className="card prediction-card" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
+            <div className="card-eyebrow"><ShieldCheck size={13} /> Neural Classification</div>
+            <div className="prediction-badge" style={{ background: predColorDim, borderColor: predColor }}>
+              {isUp ? <TrendingUp size={20} color={predColor} /> : <TrendingDown size={20} color={predColor} />}
+            </div>
+            <motion.h1 className="prediction-word" style={{ color: predColor, textShadow: `0 0 60px ${predColor}66` }} initial={{ scale: 0.7, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 120 }}>
               <ProtectedValue value={data.prediction} />
             </motion.h1>
-            
-            <div style={{ marginBottom: '30px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.9rem', color: '#94a3b8', fontWeight: '600' }}>
-                <span>Confidence</span>
-                <ProtectedValue value={data.confidence} style={{ color: predColor }} />
+            <div className="confidence-bar-wrap">
+              <span className="conf-label">Confidence</span>
+              <div className="conf-track">
+                <motion.div className="conf-fill" style={{ background: predColor }} initial={{ width: 0 }} animate={{ width: data.confidence }} transition={{ delay: 0.5, duration: 1, ease: 'easeOut' }} />
               </div>
-              <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
-                <motion.div style={{ height: '100%', background: predColor }} initial={{ width: 0 }} animate={{ width: data.confidence }} transition={{ duration: 1 }} />
-              </div>
+              <ProtectedValue value={data.confidence} className="conf-pct" style={{ color: predColor }} />
             </div>
-
-            <div className="metrics-row" style={{ display: 'flex', gap: '20px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="metrics-row">
               <StatPill label="Nifty Close" value={`₹${data.nifty_price}`} />
-              <div className="divider-v" style={{ width: '1px', background: 'rgba(255,255,255,0.05)' }} />
+              <div className="divider-v" />
               <StatPill label="India VIX" value={data.vix_real} accent={data.vix_real > 18 ? '#f43f5e' : '#10b981'} />
             </div>
           </motion.section>
 
-          <motion.section className="card chart-card" style={{ background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(12px)', borderRadius: '20px', padding: '30px', border: '1px solid rgba(255,255,255,0.05)', height: '400px' }} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#94a3b8', fontSize: '0.9rem', fontWeight: '600', marginBottom: '20px' }}><Activity size={16} /> 30-Day Trend Pulse</div>
-            <ResponsiveContainer width="100%" height="85%">
-              <AreaChart data={data.chart_data}>
-                <defs>
-                  <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={predColor} stopOpacity={0.4} />
-                    <stop offset="95%" stopColor={predColor} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} domain={['auto', 'auto']} width={45} tickFormatter={v => `${(v / 1000).toFixed(1)}k`} />
-                <Tooltip contentStyle={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#fff' }} />
-                <Area type="monotone" dataKey="price" stroke={predColor} strokeWidth={3} fill="url(#cg)" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <motion.section className="card chart-card" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15, ease: 'easeOut' }}>
+            <div className="card-eyebrow"><Activity size={13} /> Nifty 30-Day Trend Pulse</div>
+            <div className="chart-wrap">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.chart_data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={predColor} stopOpacity={0.35} />
+                      <stop offset="95%" stopColor={predColor} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'monospace' }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                  <YAxis tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'monospace' }} tickLine={false} axisLine={false} domain={['auto', 'auto']} width={56} tickFormatter={v => `₹${(v / 1000).toFixed(1)}k`} />
+                  <Tooltip contentStyle={{ background: '#0f172a', border: `1px solid ${predColor}44`, borderRadius: '12px', fontFamily: 'monospace', fontSize: '12px' }} itemStyle={{ color: predColor }} labelStyle={{ color: '#94a3b8' }} />
+                  <Area type="monotone" dataKey="price" stroke={predColor} strokeWidth={2.5} fill="url(#cg)" dot={false} animationDuration={1800} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </motion.section>
         </main>
         
-        <footer className="footer" style={{ display: 'flex', justifyContent: 'center', gap: '15px', padding: '30px 0', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '40px', color: '#64748b', fontSize: '0.85rem', fontWeight: '600' }}>
-          <span className="footer-item">NIFTY <ProtectedValue value={`₹${data.nifty_price}`} style={{ color: '#fff' }} /></span><span className="footer-sep">·</span>
-          <span className="footer-item">VIX <ProtectedValue value={data.vix_real} style={{ color: '#fff' }} /></span><span className="footer-sep">·</span>
-          <span className="footer-item">US MARKET <ProtectedValue value={data.global_factors?.us_market ?? ''} style={{ color: '#fff' }} /></span>
+        <footer className="footer">
+          <span className="footer-item">NIFTY <ProtectedValue value={`₹${data.nifty_price}`} className="footer-strong" /></span><span className="footer-sep">·</span>
+          <span className="footer-item">VIX <ProtectedValue value={data.vix_real} className="footer-strong" /></span><span className="footer-sep">·</span>
+          <span className="footer-item">US MARKET <ProtectedValue value={data.global_factors?.us_market ?? ''} className="footer-strong" /></span><span className="footer-sep">·</span>
+          <span className="footer-item dim" style={{ background: 'transparent' }}>NIRAJ QUANT SYSTEM v2.0</span>
         </footer>
       </div>
     </div>
