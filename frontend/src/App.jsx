@@ -116,6 +116,7 @@ function App() {
   const isUp = data.prediction === 'UP';
   const predColor = isUp ? '#10b981' : '#f43f5e';
   const predColorDim = isUp ? 'rgba(16,185,129,0.12)' : 'rgba(244,63,94,0.12)';
+  const backendHost = API_BASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   if (activeView === 'oi') return <OIDashboard onBack={() => setActiveView('home')} />;
   if (activeView === 'oichange') return <OIChangeDashboard onBack={() => setActiveView('home')} />;
@@ -198,7 +199,7 @@ function App() {
           <span className="footer-item">NIFTY <ProtectedValue value={`₹${data.nifty_price}`} className="footer-strong" /></span><span className="footer-sep">·</span>
           <span className="footer-item">VIX <ProtectedValue value={data.vix_real} className="footer-strong" /></span><span className="footer-sep">·</span>
           <span className="footer-item">US MARKET <ProtectedValue value={data.global_factors?.us_market ?? ''} className="footer-strong" /></span><span className="footer-sep">·</span>
-          <span className="footer-item dim" style={{ background: 'transparent' }}>NIRAJ QUANT SYSTEM v2.0</span>
+          <span className="footer-item dim" style={{ background: 'transparent' }}>Live backend: {backendHost}</span>
         </footer>
       </div>
     </div>
