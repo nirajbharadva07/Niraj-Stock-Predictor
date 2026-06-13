@@ -1,0 +1,5 @@
+@import "tailwindcss"; /* v4 mein ye ek line hi kaafi hoti hai */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
