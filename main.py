@@ -10,27 +10,38 @@ import random
 
 app = FastAPI()
 
-# MODIFIED CORS MIDDLEWARE FOR NETLIFY DEPLOYMENT
+# 1. CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Netlify aur local dono se request aane dega
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
-# Load model and scaler
-try:
-    model = joblib.load('stock_model.pkl')
-    scaler = joblib.load('scaler.pkl')
-    print(">>> NIRAJ AI ENGINE: ONLINE")
-except Exception as e:
-    print(f">>> ASSET ERROR: {e}")
+# 2. Global variables
+model = None
+scaler = None
+
+# 3. Startup event to load models safely
+@app.on_event("startup")
+def startup_event():
+    global model, scaler
+    try:
+        model = joblib.load('stock_model.pkl')
+        scaler = joblib.load('scaler.pkl')
+        print(">>> NIRAJ AI ENGINE: ONLINE & MODELS LOADED")
+    except Exception as e:
+        print(f">>> ASSET ERROR: {e}")
 
 @app.get("/predict")
 def predict():
+    global model, scaler
+    # Check if models are loaded
+    if model is None or scaler is None:
+        return {"status": "error", "message": "Model not loaded yet. Please wait."}
+    
     try:
-        # Prediction logic using yfinance
         nifty_data = yf.download('^NSEI', period='60d', progress=False)['Close']
         vix_data = yf.download('^INDIAVIX', period='60d', progress=False)['Close']
         us_data = yf.download('^GSPC', period='60d', progress=False)['Close']
@@ -70,7 +81,6 @@ def predict():
 def get_option_chain():
     try:
         nifty = yf.Ticker("^NSEI")
-        # Use fast_info to avoid potential API latency
         spot = nifty.fast_info['lastPrice']
         if not spot: spot = 24000.0
             
@@ -81,8 +91,6 @@ def get_option_chain():
         for i in range(-8, 9):
             strike = atm_strike + (i * 50)
             dist = abs(strike - spot)
-            
-            # Simulation logic
             ce_ltp = (spot - strike) + random.uniform(40, 60) if strike < spot else max(2.0, 100 - (dist * 0.4) + random.uniform(-5, 5))
             pe_ltp = (strike - spot) + random.uniform(40, 60) if strike > spot else max(2.0, 100 - (dist * 0.4) + random.uniform(-5, 5))
 
